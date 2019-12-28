@@ -6,6 +6,7 @@ class {
       height: 8,
       spinMode: false,
       colorMode: 'dark',
+      peekabooMode: false,
     }
     this.setSize(this.state.width, this.state.height)
   }
@@ -35,18 +36,32 @@ class {
   }
   updateURL() {
   }
+  refreshCells() {
+    for (let r = 0; r < this.state.cells.length; r++) {
+      for (let c = 0; c < this.state.cells[r].length; c++) {
+        this.adjustCellPhase(this.state.cells[r][c], this.state.cells[r][c].phase)
+      }
+    }
+  }
   adjustCellPhase(cell, amount) {
     cell.phase = amount
     if (cell.phase >= 8) cell.phase = 0
     if (cell.phase < 0) cell.phase = 7
-    cell.string = String.fromCodePoint(0x1F311 + cell.phase)
+    let codePoint = 0x1F311 + cell.phase
+    if (this.state.peekabooMode) {
+      if (codePoint == 0x1F311 && this.state.colorMode == 'dark') {
+        codePoint = 0x1F31A
+      } else if (codePoint == 0x1F315 && this.state.colorMode == 'light') {
+        codePoint = 0x1F31D
+      }
+    }
+    cell.string = String.fromCodePoint(codePoint)
     this.forceUpdate()
   }
   onMouseOut(cell, e) {
     if (!this.state.spinMode) return
     let start = performance.now()
     let targetDelta = Math.abs(cell.lastMovementX)*10
-    console.log(targetDelta)
     let timer = setInterval(() => {
       let current = performance.now()
       if (current - start > targetDelta) {
@@ -95,6 +110,9 @@ class {
       break;
       case 'colorMode':
         this.state.colorMode = e.target.checked ? 'dark' : 'light'
+      case 'peekabooMode':
+        this.state.peekabooMode = e.target.checked
+        this.refreshCells()
       break;
     }
   }
@@ -167,7 +185,9 @@ div.moonAmi
     label
       span -- dark mode
       input type='checkbox' on-change('handleSettingChange', 'colorMode') checked=state.colorMode=='dark'
-
+    label
+      span -- peekaboo
+      input type='checkbox' on-change('handleSettingChange', 'peekabooMode') checked=state.peekabooMode
   div.moonAmi-view class={'-dark': state.colorMode=='dark', '-light': state.colorMode=='light'}
     for|row| of=state.cells
       div.moonAmi-view-row
