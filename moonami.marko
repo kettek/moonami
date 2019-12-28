@@ -118,6 +118,20 @@ class {
       break;
     }
   }
+  handleRandomize() {
+    for (let r = 0; r < this.state.cells.length; r++) {
+      for (let c = 0; c < this.state.cells[r].length; c++) {
+        this.adjustCellPhase(this.state.cells[r][c], Math.floor(Math.random()*8))
+      }
+    }
+  }
+  handleNormalize() {
+    for (let r = 0; r < this.state.cells.length; r++) {
+      for (let c = 0; c < this.state.cells[r].length; c++) {
+        this.adjustCellPhase(this.state.cells[r][c], 0)
+      }
+    }
+  }
 }
 
 style {
@@ -190,6 +204,8 @@ div.moonAmi
     label
       span -- peekaboo
       input type='checkbox' on-change('handleSettingChange', 'peekabooMode') checked=state.peekabooMode
+    button on-click('handleRandomize') -- randomize
+    button on-click('handleNormalize') -- normalize
   div.moonAmi-view class={'-dark': state.colorMode=='dark', '-light': state.colorMode=='light'}
     for|row| of=state.cells
       div.moonAmi-view-row
