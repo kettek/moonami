@@ -5,6 +5,7 @@ class {
       width: 8,
       height: 8,
       spinMode: false,
+      colorMode: 'dark',
     }
     this.setSize(this.state.width, this.state.height)
   }
@@ -92,6 +93,9 @@ class {
       case 'spinMode':
         this.state.spinMode = e.target.checked
       break;
+      case 'colorMode':
+        this.state.colorMode = e.target.checked ? 'dark' : 'light'
+      break;
     }
   }
 }
@@ -119,13 +123,24 @@ style {
   }
   .moonAmi-settings {
     grid-area: settings;
+    color: white;
   }
   .moonAmi-view {
-    font-size: 4em;
     grid-area: view;
+    user-select: none;
     display: grid;
     grid-template-rows: repeat(auto-fit, 1em);
-    user-select: none;
+    font-size: 4em;
+  }
+  .moonAmi-view.-light {
+    color: #000;
+    background: #4B79A1;
+    background: -webkit-linear-gradient(to top, #283E51, #0A2342);
+    background: linear-gradient(to top, #283E51, #0A2342);
+    background: -olinear-gradient(to top, #283E51, #0A2342);
+  }
+  .moonAmi-view.-dark {
+    color: #fff;
     background: #4B79A1;
     background: -webkit-linear-gradient(to top, #283E51, #0A2342);
     background: linear-gradient(to top, #283E51, #0A2342);
@@ -149,7 +164,11 @@ div.moonAmi
     label
       span -- speen
       input type='checkbox' on-change('handleSettingChange', 'spinMode') checked=state.spinMode
-  div.moonAmi-view
+    label
+      span -- dark mode
+      input type='checkbox' on-change('handleSettingChange', 'colorMode') checked=state.colorMode=='dark'
+
+  div.moonAmi-view class={'-dark': state.colorMode=='dark', '-light': state.colorMode=='light'}
     for|row| of=state.cells
       div.moonAmi-view-row
         for|cell| of=row
