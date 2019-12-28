@@ -1,0 +1,156 @@
+class {
+  onCreate() {
+    this.state = {
+      cells: [],
+      width: 8,
+      height: 8,
+      spinMode: false,
+    }
+    this.setSize(this.state.width, this.state.height)
+  }
+  setSize(w,h) {
+    // TODO: non-destructive resizing.
+    this.state.cells.length = h
+    for (let r = 0; r < h; r++) {
+      this.state.cells[r] = []
+      for (let c = 0; c < w; c++) {
+        this.state.cells[r][c] = {
+          lastMovementX: 0,
+          phase: 0,
+          string: String.fromCodePoint(0x1F311),
+        }
+      }
+    }
+  }
+  onMount() {
+    this.restoreFromCookie()
+  }
+  onDestroy() {
+    this.saveToCookie()
+  }
+  restoreFromCookie() {
+  }
+  saveToCookie() {
+  }
+  updateURL() {
+  }
+  adjustCellPhase(cell, amount) {
+    cell.phase = amount
+    if (cell.phase >= 8) cell.phase = 0
+    if (cell.phase < 0) cell.phase = 7
+    cell.string = String.fromCodePoint(0x1F311 + cell.phase)
+    this.forceUpdate()
+  }
+  onMouseOut(cell, e) {
+    if (!this.state.spinMode) return
+    let start = performance.now()
+    let targetDelta = Math.abs(cell.lastMovementX)*10
+    console.log(targetDelta)
+    let timer = setInterval(() => {
+      let current = performance.now()
+      if (current - start > targetDelta) {
+        clearInterval(timer)
+      }
+      if (cell.lastMovementX < 0) {
+        this.adjustCellPhase(cell, cell.phase+1)
+      } else {
+        this.adjustCellPhase(cell, cell.phase-1)
+      }
+    }, 50)
+  }
+  onMouseMove(cell, e) {
+    if (!this.state.spinMode) return
+    cell.lastMovementX = e.movementX
+    /*if (cell.lastMovementX < 0) {
+      this.adjustCellPhase(cell, cell.phase-1)
+    } else {
+      this.adjustCellPhase(cell, cell.phase+1)
+    }*/
+  }
+  onMouseDown(cell, e) {
+    let mouseUp = (e2) => {
+      if (e2.target == e.target) {
+        switch(e.which) {
+          case 1:
+            this.adjustCellPhase(cell, cell.phase+1)
+            cell.phase++
+          break;
+          case 2:
+            this.adjustCellPhase(cell, (cell.phase+4)%8)
+          break;
+          case 3:
+            this.adjustCellPhase(cell, cell.phase-1)
+          break;
+        }
+      }
+      window.removeEventListener('mouseup', mouseUp)
+    }
+    window.addEventListener('mouseup', mouseUp)
+  }
+  handleSettingChange(name, e) {
+    switch(name) {
+      case 'spinMode':
+        this.state.spinMode = e.target.checked
+      break;
+    }
+  }
+}
+
+style {
+  html {
+    width: 100%;
+    height: 100%;
+    background: #2c2c4c;
+  }
+  body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+  }
+  .moonAmi {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-areas:
+      "settings"
+      "view";
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 1fr;
+  }
+  .moonAmi-settings {
+    grid-area: settings;
+  }
+  .moonAmi-view {
+    font-size: 4em;
+    grid-area: view;
+    display: grid;
+    grid-template-rows: repeat(auto-fit, 1em);
+    user-select: none;
+    background: #4B79A1;
+    background: -webkit-linear-gradient(to top, #283E51, #0A2342);
+    background: linear-gradient(to top, #283E51, #0A2342);
+    background: -olinear-gradient(to top, #283E51, #0A2342);
+  }
+  .moonAmi-view-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 1em);
+    grid-template-rows: 1em;
+    justify-content: center;
+  }
+  .moonAmi-view-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+div.moonAmi
+  div.moonAmi-settings
+    label
+      span -- speen
+      input type='checkbox' on-change('handleSettingChange', 'spinMode') checked=state.spinMode
+  div.moonAmi-view
+    for|row| of=state.cells
+      div.moonAmi-view-row
+        for|cell| of=row
+          div.moonAmi-view-cell on-mousemove('onMouseMove', cell) on-mouseout('onMouseOut', cell) on-mousedown('onMouseDown', cell) on-contextmenu(e=>e.preventDefault()) -- ${cell.string}
