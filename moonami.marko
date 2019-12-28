@@ -49,9 +49,9 @@ class {
     if (cell.phase < 0) cell.phase = 7
     let codePoint = 0x1F311 + cell.phase
     if (this.state.peekabooMode) {
-      if (codePoint == 0x1F311 && this.state.colorMode == 'dark') {
+      if (codePoint == 0x1F311 && this.state.colorMode == 'light') {
         codePoint = 0x1F31A
-      } else if (codePoint == 0x1F315 && this.state.colorMode == 'light') {
+      } else if (codePoint == 0x1F315 && this.state.colorMode == 'dark') {
         codePoint = 0x1F31D
       }
     }
