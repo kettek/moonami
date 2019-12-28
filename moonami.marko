@@ -110,6 +110,7 @@ class {
       break;
       case 'colorMode':
         this.state.colorMode = e.target.checked ? 'dark' : 'light'
+        this.refreshCells()
       break;
       case 'peekabooMode':
         this.state.peekabooMode = e.target.checked
