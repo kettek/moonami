@@ -2,24 +2,25 @@ class {
   onCreate() {
     this.state = {
       cells: [],
-      width: 8,
-      height: 8,
+      size: 8,
       spinMode: false,
       colorMode: 'dark',
       peekabooMode: false,
     }
-    this.setSize(this.state.width, this.state.height)
+    this.setSize(this.state.size, this.state.size)
   }
   setSize(w,h) {
-    // TODO: non-destructive resizing.
     this.state.cells.length = h
     for (let r = 0; r < h; r++) {
-      this.state.cells[r] = []
+      if (!this.state.cells[r]) this.state.cells[r] = []
+      this.state.cells[r].length = w
       for (let c = 0; c < w; c++) {
-        this.state.cells[r][c] = {
-          lastMovementX: 0,
-          phase: 0,
-          string: String.fromCodePoint(0x1F311),
+        if (!this.state.cells[r][c]) {
+          this.state.cells[r][c] = {
+            lastMovementX: 0,
+            phase: 0,
+            string: String.fromCodePoint(0x1F311),
+          }
         }
       }
     }
@@ -117,6 +118,10 @@ class {
         this.state.peekabooMode = e.target.checked
         this.refreshCells()
       break;
+      case 'size':
+        this.state.size = e.target.value
+        this.setSize(e.target.value, e.target.value)
+      break;
     }
   }
   handleRandomize() {
@@ -131,19 +136,19 @@ class {
     let count = 0
     for (let r = 0; r < this.state.cells.length; r++) {
       for (let c = 0; c < this.state.cells[r].length; c++) {
-      	if (!phasesCount[this.state.cells[r][c].phase]) phasesCount[this.state.cells[r][c].phase] = 0
-      	phasesCount[this.state.cells[r][c].phase]++
-	count++
+        if (!phasesCount[this.state.cells[r][c].phase]) phasesCount[this.state.cells[r][c].phase] = 0
+        phasesCount[this.state.cells[r][c].phase]++
+        count++
       }
     }
     let topPhaseValue = 0
     let topPhaseIndex = 0
     for (let i = 0; i < phasesCount.length; i++) {
-    	phasesCount[i] = phasesCount[i] / count
-	if (topPhaseValue < phasesCount[i]) {
-	  topPhaseValue = phasesCount[i]
-	  topPhaseIndex = i
-	}
+      phasesCount[i] = phasesCount[i] / count
+      if (topPhaseValue < phasesCount[i]) {
+        topPhaseValue = phasesCount[i]
+        topPhaseIndex = i
+      }
     }
     this.adjustCellsPhase(topPhaseIndex)
   }
@@ -200,6 +205,7 @@ style {
     grid-template-columns: repeat(auto-fit, 1em);
     grid-template-rows: 1em;
     justify-content: center;
+    user-select: none;
   }
   .moonAmi-view-cell {
     display: flex;
@@ -220,9 +226,12 @@ div.moonAmi
     label
       span -- peekaboo
       input type='checkbox' on-change('handleSettingChange', 'peekabooMode') checked=state.peekabooMode
+    label
+      span -- size
+      input type='number' on-change('handleSettingChange', 'size') value=state.size
     button on-click('handleRandomize') -- randomize
     button on-click('handleNormalize') -- normalize
-  div.moonAmi-view class={'-dark': state.colorMode=='dark', '-light': state.colorMode=='light'}
+  div.moonAmi-view class={'-dark': state.colorMode=='dark', '-light': state.colorMode=='light'} style={'font-size': 80/state.size+'vmin'}
     for|row| of=state.cells
       div.moonAmi-view-row
         for|cell| of=row
